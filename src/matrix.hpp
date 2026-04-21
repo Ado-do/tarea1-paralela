@@ -38,7 +38,7 @@ protected:
     size_t n;
 
 public:
-    Matrix(size_t size) : n(size), array(new double[size * size]()) {};
+    Matrix(size_t size) : array(new double[size * size]()), n(size) {};
 
     inline double& operator()(size_t i, size_t j) {
         return array[i*n + j];

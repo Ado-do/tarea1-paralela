@@ -9,11 +9,11 @@ TARGETS = build/parallel_main build/sequential_main
 all: $(TARGETS)
 
 
-build/sequential_main: src/sequential_main.cpp src/matrix.hpp | build/
-	$(CXX) $(CXXFLAGS) $< -o $@
+build/sequential_main: src/sequential_main.cpp src/sequential_algorithms.cpp src/matrix.hpp | build/
+	$(CXX) $(CXXFLAGS) src/sequential_main.cpp src/sequential_algorithms.cpp -o $@
 
-build/parallel_main: src/parallel_main.cpp src/matrix.hpp | build/
-	$(CXX) $(CXXFLAGS) $< -o $@
+build/parallel_main: src/parallel_main.cpp src/parallel_algorithms.cpp src/matrix.hpp | build/
+	$(CXX) $(CXXFLAGS) src/parallel_main.cpp src/parallel_algorithms.cpp -o $@
 
 build/:
 	mkdir -p build
