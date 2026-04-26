@@ -2,8 +2,11 @@
 #include <chrono>
 #include <random>
 #include <fstream>
+#include <functional>
+#include <vector>
 
 #include "sequential_algorithms.hpp"
+#include "tests.hpp"
 
 using namespace std;
 
@@ -38,12 +41,12 @@ void run_sequential_experiment(size_t n, int repetitions, ofstream &csv) {
     cout << "  Clásica:\t\t" << diff.count() << "s" << endl;
 
     // 2. Cache-friendly
-    start = chrono::high_resolution_clock::now();
-    for(int i = 0; i < repetitions; ++i) sequential_cachefriendly_multiply(A, B, C, b);
-    end = chrono::high_resolution_clock::now();
-    diff = (end - start) / repetitions;
-    csv << diff.count() << ',';
-    cout << "  Cache-friendly:\t" << diff.count() << "s" << endl;
+    //start = chrono::high_resolution_clock::now();
+    //for(int i = 0; i < repetitions; ++i) sequential_cachefriendly_multiply(A, B, C, b);
+    //end = chrono::high_resolution_clock::now();
+    //diff = (end - start) / repetitions;
+    //csv << diff.count() << ',';
+    //cout << "  Cache-friendly:\t" << diff.count() << "s" << endl;
 
     // 3. Strassen
     start = chrono::high_resolution_clock::now();
@@ -55,6 +58,7 @@ void run_sequential_experiment(size_t n, int repetitions, ofstream &csv) {
 }
 
 int main() {
+    
     vector<size_t> sizes = {256, 512, 1024, 2048, 4096};
     int repetitions = 3;
 
@@ -63,8 +67,8 @@ int main() {
 
 
     cout << "** EJECUTANDO EXPERIMENTOS DE ALGORITMOS SECUENCIALES:\n";
-    //for (size_t n : sizes) run_sequential_experiment(n, repetitions, csv);
-    run_sequential_experiment(32, repetitions, csv);
+    for (size_t n : sizes) run_sequential_experiment(n, repetitions, csv);
+    //run_sequential_experiment(32, repetitions, csv);
 
     return 0;
 }
