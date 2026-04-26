@@ -54,40 +54,42 @@ void run_sequential_experiment(size_t n, int repetitions, ofstream &csv) {
     cout << "  Strassen:\t\t" << diff.count() << "s" << endl;
 }
 
-// int main() {
-//     vector<size_t> sizes = {256, 512, 1024, 2048, 4096};
-//     int repetitions = 3;
-//
-//     ofstream csv(csv_path);
-//     csv << "n,classic,cache,strassen\n";
-//
-//     //for (size_t n : sizes) run_sequential_experiment(n, repetitions, csv);
-//     run_sequential_experiment(32, repetitions, csv);
-//
-//     return 0;
-// }
-
 int main() {
-    cout << "Hello World!\n";
+    vector<size_t> sizes = {256, 512, 1024, 2048, 4096};
+    int repetitions = 3;
 
-    size_t n = 2;
-    Matrix A(n), B(n), C(n);
-    for (size_t i = 0; i < n; i++) {
-        for (size_t j = 0; j < n; j++) {
-            A(i, j) = B(i, j) = (i * n) + j + 1;
-        }
-    }
+    ofstream csv(csv_path);
+    csv << "n,classic,cache,strassen\n";
 
-    cout << "* A:\n";
-    A.print();
-    cout << "* B:\n";
-    B.print();
 
-    // Probar algoritmos
-    sequential_classic_multiply(A, B, C);
-
-    cout << "* C:\n";
-    C.print();
+    cout << "** EJECUTANDO EXPERIMENTOS DE ALGORITMOS SECUENCIALES:\n";
+    //for (size_t n : sizes) run_sequential_experiment(n, repetitions, csv);
+    run_sequential_experiment(32, repetitions, csv);
 
     return 0;
 }
+
+// int main() {
+//     cout << "Hello World!\n";
+//
+//     size_t n = 2;
+//     Matrix A(n), B(n), C(n);
+//     for (size_t i = 0; i < n; i++) {
+//         for (size_t j = 0; j < n; j++) {
+//             A(i, j) = B(i, j) = (i * n) + j + 1;
+//         }
+//     }
+//
+//     cout << "* A:\n";
+//     A.print();
+//     cout << "* B:\n";
+//     B.print();
+//
+//     // Probar algoritmos
+//     sequential_classic_multiply(A, B, C);
+//
+//     cout << "* C:\n";
+//     C.print();
+//
+//     return 0;
+// }
