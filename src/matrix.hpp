@@ -50,4 +50,10 @@ public:
     size_t size() const { return n; };
     double* data() const { return array; };
     MatrixView view() const { return MatrixView(array, n, n); }
+    MatrixView get_quadrant(int quad) const {
+        size_t half = n / 2;
+        size_t row_offset = (quad == 2 || quad == 3) ? n/2 : 0;
+        size_t col_offset = (quad == 1 || quad == 3) ? n/2 : 0;
+        return MatrixView(array + (row_offset * n) + col_offset, half, n);
+    };
 };
