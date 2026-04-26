@@ -4,6 +4,7 @@
 
 ```bash
 make
+./build/tests_main
 ./build/sequential_main
 ./build/parallel_main
 ```
