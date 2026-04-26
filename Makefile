@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17
+CXXFLAGS = -Wall -std=c++17
 
 SRC = $(wildcard src/*.cpp)
 OBJ = $(SRC:src/%.cpp=build/%.o)
@@ -13,7 +13,7 @@ build/sequential_main: src/sequential_main.cpp src/sequential_algorithms.cpp src
 	$(CXX) $(CXXFLAGS) src/sequential_main.cpp src/sequential_algorithms.cpp -o $@
 
 build/parallel_main: src/parallel_main.cpp src/parallel_algorithms.cpp src/matrix.hpp | build/
-	$(CXX) $(CXXFLAGS) src/parallel_main.cpp src/parallel_algorithms.cpp -o $@
+	$(CXX) $(CXXFLAGS) -fopenmp src/parallel_main.cpp src/parallel_algorithms.cpp -o $@
 
 build/:
 	mkdir -p build
