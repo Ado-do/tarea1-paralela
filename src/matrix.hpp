@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstddef>
+#include <iostream>
+#include <iomanip>
 
 class MatrixView {
 private:
@@ -33,7 +34,7 @@ public:
 };
 
 class Matrix {
-protected:
+private:
     double *array;
     size_t n;
 
@@ -50,4 +51,15 @@ public:
     size_t size() const { return n; };
     double* data() const { return array; };
     MatrixView view() const { return MatrixView(array, n, n); }
+
+    void print() {
+        for (size_t i = 0; i < n; i++) {
+            std::cout << "[ ";
+            for (size_t j = 0; j < n; j++) {
+                std::cout << std::setw(3) << (*this)(i, j) << " ";
+            }
+            std::cout << " ]\n";
+        }
+        std::cout << std::endl;
+    }
 };
