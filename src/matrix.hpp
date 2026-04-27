@@ -40,6 +40,7 @@ private:
 
 public:
     Matrix(size_t size) : array(new double[size * size]()), n(size) {};
+    ~Matrix() { delete[] array; }
 
     inline double& operator()(size_t i, size_t j) {
         return array[i*n + j];

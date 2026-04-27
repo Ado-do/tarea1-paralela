@@ -1,23 +1,22 @@
-#include <iostream>
 #include <chrono>
-#include <random>
 #include <fstream>
-#include <functional>
+#include <iostream>
+#include <random>
 #include <vector>
 
 #include "sequential_algorithms.hpp"
-#include "tests.hpp"
 
 using namespace std;
 
-// Nombre del CSV
-const string csv_path = "sequential.csv";
-// Tamaño de los bloques para algoritmo cache-friendly
-const size_t b = 32;
+const string CSV_PATH = "sequential.csv";
+const size_t BLOCK_SIZE = 32;
+const size_t TEST_SIZE = 2048;
+const int REPETITIONS = 4;
 
+void run_sequential_experiment(size_t n, ofstream &csv) {
+    int reps = ((n >= 2048)? 1 : REPETITIONS);
 
-void run_sequential_experiment(size_t n, int repetitions, ofstream &csv) {
-    cout << "* Experimento con n = " << n << endl;
+    cout << "* Experimento: n = " << n << ", b = " << BLOCK_SIZE << ", reps = " << reps << endl;
     csv << n << ',';
 
     // Inicializar matrices
@@ -34,66 +33,38 @@ void run_sequential_experiment(size_t n, int repetitions, ofstream &csv) {
 
     // 1. Clásica
     auto start = chrono::high_resolution_clock::now();
-    for(int i = 0; i < repetitions; ++i) sequential_classic_multiply(A, B, C);
+    for (int i = 0; i < reps; ++i)
+        sequential_classic_multiply(A, B, C);
     auto end = chrono::high_resolution_clock::now();
-    chrono::duration<double> diff = (end - start) / repetitions;
-    csv <<  diff.count() << ',';
+    chrono::duration<double> diff = (end - start) / reps;
+    csv << diff.count() << ',';
     cout << "  Clásica:\t\t" << diff.count() << "s" << endl;
 
     // 2. Cache-friendly
-    //start = chrono::high_resolution_clock::now();
-    //for(int i = 0; i < repetitions; ++i) sequential_cachefriendly_multiply(A, B, C, b);
-    //end = chrono::high_resolution_clock::now();
-    //diff = (end - start) / repetitions;
-    //csv << diff.count() << ',';
-    //cout << "  Cache-friendly:\t" << diff.count() << "s" << endl;
+    start = chrono::high_resolution_clock::now();
+    for(int i = 0; i < reps; ++i) sequential_cachefriendly_multiply(A, B, C, BLOCK_SIZE);
+    end = chrono::high_resolution_clock::now();
+    diff = (end - start) / reps;
+    csv << diff.count() << ',';
+    cout << "  Cache-friendly:\t" << diff.count() << "s" << endl;
 
     // 3. Strassen
     start = chrono::high_resolution_clock::now();
-    for(int i = 0; i < repetitions; ++i) sequential_strassen_multiply(A, B, C);
+    for (int i = 0; i < reps; ++i) sequential_strassen_multiply(A, B, C);
     end = chrono::high_resolution_clock::now();
-    diff = (end - start) / repetitions;
+    diff = (end - start) / reps;
     csv << diff.count() << '\n';
     cout << "  Strassen:\t\t" << diff.count() << "s" << endl;
 }
 
 int main() {
-    
-    vector<size_t> sizes = {256, 512, 1024, 2048, 4096};
-    int repetitions = 3;
+    vector<size_t> sizes = {128, 256, 512, 1024, 2048, 4096};
 
-    ofstream csv(csv_path);
+    ofstream csv(CSV_PATH);
     csv << "n,classic,cache,strassen\n";
 
-
     cout << "** EJECUTANDO EXPERIMENTOS DE ALGORITMOS SECUENCIALES:\n";
-    for (size_t n : sizes) run_sequential_experiment(n, repetitions, csv);
-    //run_sequential_experiment(32, repetitions, csv);
+    for (size_t n : sizes) run_sequential_experiment(n, csv);
 
     return 0;
 }
-
-// int main() {
-//     cout << "Hello World!\n";
-//
-//     size_t n = 2;
-//     Matrix A(n), B(n), C(n);
-//     for (size_t i = 0; i < n; i++) {
-//         for (size_t j = 0; j < n; j++) {
-//             A(i, j) = B(i, j) = (i * n) + j + 1;
-//         }
-//     }
-//
-//     cout << "* A:\n";
-//     A.print();
-//     cout << "* B:\n";
-//     B.print();
-//
-//     // Probar algoritmos
-//     sequential_classic_multiply(A, B, C);
-//
-//     cout << "* C:\n";
-//     C.print();
-//
-//     return 0;
-// }
