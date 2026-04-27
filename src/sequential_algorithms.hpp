@@ -32,9 +32,11 @@ template <typename MatA, typename MatB, typename MatC>
 void sequential_classic_multiply(const MatA& A, const MatB& B, MatC& C);
 
 // Multiplicación de bloques cache-friendly
-void multiply_block_gemm(size_t I, size_t J, size_t b, const Matrix& A, const Matrix& B, Matrix& C);
+template <typename MatA, typename MatB, typename MatC>
+void multiply_block_gemm(size_t I, size_t J, size_t b, const MatA& A, const MatB& B, MatC& C);
 
-void sequential_cachefriendly_multiply(const Matrix& A, const Matrix &B, Matrix &C, size_t b);
+template <typename MatA, typename MatB, typename MatC>
+void sequential_cachefriendly_multiply(const MatA& A, const MatB& B, MatC& C, size_t b);
 
 template <typename MatA, typename MatB, typename MatC>
 void sequential_strassen_multiply(const MatA& A, const MatB &B, MatC &C);

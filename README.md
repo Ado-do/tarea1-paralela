@@ -3,6 +3,7 @@
 ## Uso
 
 ```bash
+make clean
 make
 ./build/tests_main
 ./build/sequential_main

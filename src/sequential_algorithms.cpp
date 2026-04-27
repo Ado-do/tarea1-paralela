@@ -99,7 +99,9 @@ void sequential_strassen_multiply(const MatA& A, const MatB &B, MatC &C) {
 }
 
 // TODO para matías: Esto probablemente sea lo que tenías que hacer tú.
-void multiply_block_gemm(size_t I, size_t J, size_t b, const Matrix& A, const Matrix& B, Matrix& C) {
+// YO, matías: Le agregue el template
+template <typename MatA, typename MatB, typename MatC>
+void multiply_block_gemm(size_t I, size_t J, size_t b, const MatA& A, const MatB& B, MatC& C) {
     size_t n = A.size();
     size_t n_blocks = (n + b - 1) / b;
 
@@ -139,7 +141,8 @@ void multiply_block_gemm(size_t I, size_t J, size_t b, const Matrix& A, const Ma
 
 }
 
-void sequential_cachefriendly_multiply(const Matrix& A, const Matrix &B, Matrix &C, size_t b) {
+template <typename MatA, typename MatB, typename MatC>
+void sequential_cachefriendly_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) {
     size_t n = A.size();
     size_t n_blocks = (n + b - 1) / b;
     for (size_t I = 0; I < n_blocks; ++I) {
@@ -170,3 +173,23 @@ template void sequential_classic_multiply<Matrix, Matrix, MatrixView>(const Matr
 template void sequential_classic_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&);
 template void sequential_classic_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&);
 template void sequential_classic_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&);
+
+// Por bloque, cada bloque
+template void multiply_block_gemm<Matrix, Matrix, Matrix>(size_t, size_t, size_t, const Matrix&, const Matrix&, Matrix&);
+template void multiply_block_gemm<MatrixView, Matrix, Matrix>(size_t, size_t, size_t, const MatrixView&, const Matrix&, Matrix&);
+template void multiply_block_gemm<Matrix, MatrixView, Matrix>(size_t, size_t, size_t, const Matrix&, const MatrixView&, Matrix&);
+template void multiply_block_gemm<MatrixView, MatrixView, Matrix>(size_t, size_t, size_t, const MatrixView&, const MatrixView&, Matrix&);
+template void multiply_block_gemm<Matrix, Matrix, MatrixView>(size_t, size_t, size_t, const Matrix&, const Matrix&, MatrixView&);
+template void multiply_block_gemm<MatrixView, Matrix, MatrixView>(size_t, size_t, size_t, const MatrixView&, const Matrix&, MatrixView&);
+template void multiply_block_gemm<Matrix, MatrixView, MatrixView>(size_t, size_t, size_t, const Matrix&, const MatrixView&, MatrixView&);
+template void multiply_block_gemm<MatrixView, MatrixView, MatrixView>(size_t, size_t, size_t, const MatrixView&, const MatrixView&, MatrixView&);
+
+// Por bloque, partición por bloques
+template void sequential_cachefriendly_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&, size_t);
+template void sequential_cachefriendly_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&, size_t);
+template void sequential_cachefriendly_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&, size_t);
+template void sequential_cachefriendly_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&, size_t);
+template void sequential_cachefriendly_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&, size_t);
+template void sequential_cachefriendly_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&, size_t);
+template void sequential_cachefriendly_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&, size_t);
+template void sequential_cachefriendly_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&, size_t);
