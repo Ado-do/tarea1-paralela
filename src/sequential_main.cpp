@@ -33,8 +33,8 @@ void run_sequential_experiment(size_t n, ofstream &csv) {
 
     // 1. Clásica
     auto start = chrono::high_resolution_clock::now();
-    for (int i = 0; i < reps; ++i)
-        sequential_classic_multiply(A, B, C);
+    //for (int i = 0; i < reps; ++i)
+    //    sequential_classic_multiply(A, B, C);
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> diff = (end - start) / reps;
     csv << diff.count() << ',';
@@ -42,7 +42,7 @@ void run_sequential_experiment(size_t n, ofstream &csv) {
 
     // 2. Cache-friendly
     start = chrono::high_resolution_clock::now();
-    for(int i = 0; i < reps; ++i) sequential_cachefriendly_multiply(A, B, C, BLOCK_SIZE);
+    //for(int i = 0; i < reps; ++i) sequential_cachefriendly_multiply(A, B, C, BLOCK_SIZE);
     end = chrono::high_resolution_clock::now();
     diff = (end - start) / reps;
     csv << diff.count() << ',';
@@ -58,7 +58,8 @@ void run_sequential_experiment(size_t n, ofstream &csv) {
 }
 
 int main() {
-    vector<size_t> sizes = {128, 256, 512, 1024, 2048, 4096};
+    //vector<size_t> sizes = {128, 256, 512, 1024, 2048, 4096};
+    vector<size_t> sizes = {4096};
 
     ofstream csv(CSV_PATH);
     csv << "n,classic,cache,strassen\n";

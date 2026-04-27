@@ -41,6 +41,19 @@ private:
 public:
     Matrix(size_t size) : array(new double[size * size]()), n(size) {};
     ~Matrix() { delete[] array; }
+    Matrix(const Matrix& other) : n(other.n) {
+        array = new double[n * n];
+        std::copy(other.array, other.array + (n * n), array);
+    }
+    Matrix& operator=(const Matrix& other) {
+        if (this != &other) {
+            delete[] array;
+            n = other.n;
+            array = new double[n * n];
+            std::copy(other.array, other.array + (n * n), array);
+        }
+        return *this;
+    }
 
     inline double& operator()(size_t i, size_t j) {
         return array[i*n + j];
