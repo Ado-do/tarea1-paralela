@@ -4,6 +4,7 @@
 
 #include "matrix.hpp"
 #include "parallel_algorithms.hpp"
+#include "sequential_algorithms.hpp"
 #include "tests.hpp"
 
 using namespace std;
@@ -18,6 +19,18 @@ int main() {
                 sequential_strassen_multiply(A, B, C);
             },
             "Strassen secuencial"
+        },
+        {
+            [](const Matrix& A, const Matrix& B, Matrix& C) {
+                sequential_cachefriendly_multiply(A, B, C, 32);
+            },
+            "Submatrices secuencial con bloques de 32x32"
+        },
+        {
+            [](const Matrix& A, const Matrix& B, Matrix& C) {
+                sequential_cachefriendly_multiply(A, B, C, 64);
+            },
+            "Submatrices secuencial con bloques de 64x64"
         },
         {
             [](const Matrix& A, const Matrix& B, Matrix& C) {
