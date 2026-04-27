@@ -1,24 +1,36 @@
-CXX = g++
-CXXFLAGS = -Wall -std=c++17
+CXX      := g++
+CXXFLAGS := -Wall -std=c++17 -fopenmp
+BUILD_DIR := build
+SRC_DIR   := src
 
-SRC = $(wildcard src/*.cpp)
-OBJ = $(SRC:src/%.cpp=build/%.o)
+# Requerimietnos de objects
+COMMON_OBJS := $(BUILD_DIR)/sequential_algorithms.o
+PARALLEL_OBJS := $(BUILD_DIR)/parallel_algorithms.o $(COMMON_OBJS)
 
-TARGETS = build/parallel_main build/sequential_main build/tests_main
+TARGETS := $(BUILD_DIR)/parallel_main \
+           $(BUILD_DIR)/sequential_main \
+           $(BUILD_DIR)/tests_main
+
+.PHONY: all clean
 
 all: $(TARGETS)
 
-build/sequential_main: src/sequential_main.cpp src/sequential_algorithms.cpp src/matrix.hpp | build/
-	$(CXX) $(CXXFLAGS) src/sequential_main.cpp src/sequential_algorithms.cpp -o $@
+# Linking
+$(BUILD_DIR)/parallel_main: $(BUILD_DIR)/parallel_main.o $(PARALLEL_OBJS)
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
-build/parallel_main: src/parallel_main.cpp src/parallel_algorithms.cpp src/matrix.hpp | build/
-	$(CXX) $(CXXFLAGS) -fopenmp src/parallel_main.cpp src/parallel_algorithms.cpp -o $@
+$(BUILD_DIR)/sequential_main: $(BUILD_DIR)/sequential_main.o $(COMMON_OBJS)
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
-build/tests_main: src/tests_main.cpp src/parallel_algorithms.cpp src/sequential_algorithms.cpp src/tests.hpp | build/
-	$(CXX) $(CXXFLAGS) -fopenmp src/tests_main.cpp src/parallel_algorithms.cpp src/sequential_algorithms.cpp -o $@
+$(BUILD_DIR)/tests_main: $(BUILD_DIR)/tests_main.o $(PARALLEL_OBJS)
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
-build/:
-	mkdir -p build
+# Regla para objects
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 clean:
-	rm -rf build
+	rm -rf $(BUILD_DIR)
