@@ -16,7 +16,7 @@ int main() {
     vector<func_tuple> tasks = {
         {
             [](const Matrix& A, const Matrix& B, Matrix& C) {
-                sequential_strassen_multiply(A, B, C);
+                sequential_strassen_multiply(A, B, C, 32);
             },
             "Strassen secuencial"
         },

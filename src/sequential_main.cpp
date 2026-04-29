@@ -9,12 +9,14 @@
 using namespace std;
 
 const string CSV_PATH = "sequential.csv";
-const size_t BLOCK_SIZE = 32;
+const size_t BLOCK_SIZE = 128;
 const size_t TEST_SIZE = 2048;
-const int REPETITIONS = 4;
+const int REPETITIONS = 5;
+const int N0 = 16;
 
 void run_sequential_experiment(size_t n, ofstream &csv) {
-    int reps = ((n >= 2048)? 1 : REPETITIONS);
+    // int reps = ((n >= 2048)? 1 : REPETITIONS);
+    int reps = REPETITIONS;
 
     cout << "* Experimento: n = " << n << ", b = " << BLOCK_SIZE << ", reps = " << reps << endl;
     csv << n << ',';
@@ -33,8 +35,8 @@ void run_sequential_experiment(size_t n, ofstream &csv) {
 
     // 1. Clásica
     auto start = chrono::high_resolution_clock::now();
-    //for (int i = 0; i < reps; ++i)
-    //    sequential_classic_multiply(A, B, C);
+    for (int i = 0; i < reps; ++i)
+        sequential_classic_multiply(A, B, C);
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> diff = (end - start) / reps;
     csv << diff.count() << ',';
@@ -42,7 +44,7 @@ void run_sequential_experiment(size_t n, ofstream &csv) {
 
     // 2. Cache-friendly
     start = chrono::high_resolution_clock::now();
-    //for(int i = 0; i < reps; ++i) sequential_cachefriendly_multiply(A, B, C, BLOCK_SIZE);
+    for(int i = 0; i < reps; ++i) sequential_cachefriendly_multiply(A, B, C, BLOCK_SIZE);
     end = chrono::high_resolution_clock::now();
     diff = (end - start) / reps;
     csv << diff.count() << ',';
@@ -50,7 +52,7 @@ void run_sequential_experiment(size_t n, ofstream &csv) {
 
     // 3. Strassen
     start = chrono::high_resolution_clock::now();
-    for (int i = 0; i < reps; ++i) sequential_strassen_multiply(A, B, C);
+    //for (int i = 0; i < reps; ++i) sequential_strassen_multiply(A, B, C, N0);
     end = chrono::high_resolution_clock::now();
     diff = (end - start) / reps;
     csv << diff.count() << '\n';
@@ -58,8 +60,8 @@ void run_sequential_experiment(size_t n, ofstream &csv) {
 }
 
 int main() {
-    //vector<size_t> sizes = {128, 256, 512, 1024, 2048, 4096};
-    vector<size_t> sizes = {4096};
+    vector<size_t> sizes = {128, 256, 512, 1024, 2048, 4096};
+    //vector<size_t> sizes = {4096};
 
     ofstream csv(CSV_PATH);
     csv << "n,classic,cache,strassen\n";
