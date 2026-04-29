@@ -76,7 +76,7 @@ int main() {
 
     cout << "** EJECUTANDO EXPERIMENTOS DE ALGORITMOS PARALELOS:\n";
     //for (size_t n : sizes) run_sequential_experiment(n, repetitions, csv);
-    run_parallel_experiment(32, repetitions, 2, csv);
+    run_parallel_experiment(1024, repetitions, 2, csv);
 
     return 0;
 }
