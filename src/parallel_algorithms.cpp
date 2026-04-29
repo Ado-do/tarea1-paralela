@@ -17,9 +17,9 @@ void parallel_tiled_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) {
 }
 
 template <typename MatA, typename MatB, typename MatC>
-void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C) {
+void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C, size_t n0) {
     size_t n = A.size();
-    if (n <= 32) { // n_0 distinto probablemente sea mejor.
+    if (n <= n0) { 
         sequential_classic_multiply(A, B, C);
         return;
     }
@@ -46,7 +46,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C) {
         Matrix T1_1(m), T1_2(m);
         sequential_add_matrices(A11, A22, T1_1);
         sequential_add_matrices(B11, B22, T1_2);
-        _parallel_strassen_multiply(T1_1, T1_2, M1);
+        _parallel_strassen_multiply(T1_1, T1_2, M1, n0);
     }
 
     // M2 = (A21 + A22)B11
@@ -54,7 +54,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C) {
     {
         Matrix T2(m);
         sequential_add_matrices(A21, A22, T2);
-        _parallel_strassen_multiply(T2, B11, M2);
+        _parallel_strassen_multiply(T2, B11, M2, n0);
     }
 
     // M3 = A11(B12 - B22)
@@ -62,7 +62,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C) {
     {
         Matrix T3(m);
         sequential_sub_matrices(B12, B22, T3);
-        _parallel_strassen_multiply(A11, T3, M3);
+        _parallel_strassen_multiply(A11, T3, M3, n0);
     }
 
     // M4 = A22(B21 - B11)
@@ -70,7 +70,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C) {
     {
         Matrix T4(m);
         sequential_sub_matrices(B21, B11, T4);
-        _parallel_strassen_multiply(A22, T4, M4);
+        _parallel_strassen_multiply(A22, T4, M4, n0);
     }
 
     // M5 = (A11 + A12)B22
@@ -78,7 +78,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C) {
     {
         Matrix T5(m);
         sequential_add_matrices(A11, A12, T5);
-        _parallel_strassen_multiply(T5, B22, M5);
+        _parallel_strassen_multiply(T5, B22, M5, n0);
     }
 
     // M6 = (A21 - A11)(B11 + B12)
@@ -87,7 +87,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C) {
         Matrix T6_1(m), T6_2(m);
         sequential_sub_matrices(A21, A11, T6_1);
         sequential_add_matrices(B11, B12, T6_2);
-        _parallel_strassen_multiply(T6_1, T6_2, M6);
+        _parallel_strassen_multiply(T6_1, T6_2, M6, n0);
     }
 
     // M7 = (A12 - A22)(B21 + B22)
@@ -96,7 +96,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C) {
         Matrix T7_1(m), T7_2(m);
         sequential_sub_matrices(A12, A22, T7_1);
         sequential_add_matrices(B21, B22, T7_2);
-        _parallel_strassen_multiply(T7_1, T7_2, M7);
+        _parallel_strassen_multiply(T7_1, T7_2, M7, n0);
     }
 
     // Sincronización
@@ -126,21 +126,22 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C) {
 }
 
 template <typename MatA, typename MatB, typename MatC>
-void parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C) {
+void parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C, size_t n0) {
     #pragma omp parallel
     {
         #pragma omp single
         {
-            _parallel_strassen_multiply(A, B, C);
+            _parallel_strassen_multiply(A, B, C, n0);
         }
     }
 }
 
 template <typename MatA, typename MatB, typename MatC>
-void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) {
+void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b, size_t n0) {
     size_t n = A.size();
-    if (n <= 256) { // n_0 distinto probablemente sea mejor.
-        parallel_tiled_multiply(A, B, C, b);
+    if (n <= n0) { // n_0 distinto probablemente sea mejor.
+        //parallel_tiled_multiply(A, B, C, b);
+        sequential_cachefriendly_multiply(A, B, C, b);
         return;
     }
 
@@ -166,7 +167,7 @@ void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) 
         Matrix T1_1(m), T1_2(m);
         sequential_add_matrices(A11, A22, T1_1);
         sequential_add_matrices(B11, B22, T1_2);
-        _parallel_strassen_multiply(T1_1, T1_2, M1);
+        _parallel_strassen_multiply(T1_1, T1_2, M1, n0);
     }
 
     // M2 = (A21 + A22)B11
@@ -174,7 +175,7 @@ void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) 
     {
         Matrix T2(m);
         sequential_add_matrices(A21, A22, T2);
-        _parallel_strassen_multiply(T2, B11, M2);
+        _parallel_strassen_multiply(T2, B11, M2, n0);
     }
 
     // M3 = A11(B12 - B22)
@@ -182,7 +183,7 @@ void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) 
     {
         Matrix T3(m);
         sequential_sub_matrices(B12, B22, T3);
-        _parallel_strassen_multiply(A11, T3, M3);
+        _parallel_strassen_multiply(A11, T3, M3, n0);
     }
 
     // M4 = A22(B21 - B11)
@@ -190,7 +191,7 @@ void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) 
     {
         Matrix T4(m);
         sequential_sub_matrices(B21, B11, T4);
-        _parallel_strassen_multiply(A22, T4, M4);
+        _parallel_strassen_multiply(A22, T4, M4, n0);
     }
 
     // M5 = (A11 + A12)B22
@@ -198,7 +199,7 @@ void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) 
     {
         Matrix T5(m);
         sequential_add_matrices(A11, A12, T5);
-        _parallel_strassen_multiply(T5, B22, M5);
+        _parallel_strassen_multiply(T5, B22, M5, n0);
     }
 
     // M6 = (A21 - A11)(B11 + B12)
@@ -207,7 +208,7 @@ void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) 
         Matrix T6_1(m), T6_2(m);
         sequential_sub_matrices(A21, A11, T6_1);
         sequential_add_matrices(B11, B12, T6_2);
-        _parallel_strassen_multiply(T6_1, T6_2, M6);
+        _parallel_strassen_multiply(T6_1, T6_2, M6, n0);
     }
 
     // M7 = (A12 - A22)(B21 + B22)
@@ -216,7 +217,7 @@ void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) 
         Matrix T7_1(m), T7_2(m);
         sequential_sub_matrices(A12, A22, T7_1);
         sequential_add_matrices(B21, B22, T7_2);
-        _parallel_strassen_multiply(T7_1, T7_2, M7);
+        _parallel_strassen_multiply(T7_1, T7_2, M7, n0);
     }
 
     // Sincronización
@@ -246,35 +247,35 @@ void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) 
 }
 
 template <typename MatA, typename MatB, typename MatC>
-void parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b) {
+void parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b, size_t n0) {
     #pragma omp parallel
     {
         #pragma omp single
         {
-            _parallel_hybrid_multiply(A, B, C, b);
+            _parallel_hybrid_multiply(A, B, C, b, n0);
         }
     }
 }
 
 // instanciaciones explícitas de los template
 // Strassen (8 combinaciones)
-template void parallel_strassen_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&);
-template void parallel_strassen_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&);
-template void parallel_strassen_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&);
-template void parallel_strassen_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&);
-template void parallel_strassen_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&);
-template void parallel_strassen_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&);
-template void parallel_strassen_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&);
-template void parallel_strassen_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&);
+template void parallel_strassen_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&, size_t);
+template void parallel_strassen_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&, size_t);
+template void parallel_strassen_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&, size_t);
+template void parallel_strassen_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&, size_t);
+template void parallel_strassen_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&, size_t);
+template void parallel_strassen_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&, size_t);
+template void parallel_strassen_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&, size_t);
+template void parallel_strassen_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&, size_t);
 
-template void _parallel_strassen_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&);
-template void _parallel_strassen_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&);
-template void _parallel_strassen_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&);
-template void _parallel_strassen_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&);
-template void _parallel_strassen_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&);
-template void _parallel_strassen_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&);
-template void _parallel_strassen_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&);
-template void _parallel_strassen_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&);
+template void _parallel_strassen_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&, size_t);
+template void _parallel_strassen_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&, size_t);
+template void _parallel_strassen_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&, size_t);
+template void _parallel_strassen_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&, size_t);
+template void _parallel_strassen_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&, size_t);
+template void _parallel_strassen_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&, size_t);
+template void _parallel_strassen_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&, size_t);
+template void _parallel_strassen_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&, size_t);
 
 // Por bloque, partición por bloques
 template void parallel_tiled_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&, size_t);
@@ -287,20 +288,20 @@ template void parallel_tiled_multiply<Matrix, MatrixView, MatrixView>(const Matr
 template void parallel_tiled_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&, size_t);
 
 // Hibrido
-template void parallel_hybrid_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&, size_t);
-template void parallel_hybrid_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&, size_t);
-template void parallel_hybrid_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&, size_t);
-template void parallel_hybrid_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&, size_t);
-template void parallel_hybrid_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&, size_t);
-template void parallel_hybrid_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&, size_t);
-template void parallel_hybrid_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&, size_t);
-template void parallel_hybrid_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&, size_t);
+template void parallel_hybrid_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&, size_t, size_t);
+template void parallel_hybrid_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&, size_t, size_t);
+template void parallel_hybrid_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&, size_t, size_t);
+template void parallel_hybrid_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&, size_t, size_t);
+template void parallel_hybrid_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&, size_t, size_t);
+template void parallel_hybrid_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&, size_t, size_t);
+template void parallel_hybrid_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&, size_t, size_t);
+template void parallel_hybrid_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&, size_t, size_t);
 
-template void _parallel_hybrid_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&, size_t);
-template void _parallel_hybrid_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&, size_t);
-template void _parallel_hybrid_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&, size_t);
-template void _parallel_hybrid_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&, size_t);
-template void _parallel_hybrid_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&, size_t);
-template void _parallel_hybrid_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&, size_t);
-template void _parallel_hybrid_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&, size_t);
-template void _parallel_hybrid_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&, size_t);
+template void _parallel_hybrid_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&, size_t, size_t);
+template void _parallel_hybrid_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&, size_t, size_t);
+template void _parallel_hybrid_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&, size_t, size_t);
+template void _parallel_hybrid_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&, size_t, size_t);
+template void _parallel_hybrid_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&, size_t, size_t);
+template void _parallel_hybrid_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&, size_t, size_t);
+template void _parallel_hybrid_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&, size_t, size_t);
+template void _parallel_hybrid_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&, size_t, size_t);

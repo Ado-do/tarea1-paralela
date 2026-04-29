@@ -43,6 +43,24 @@ int main() {
                 parallel_tiled_multiply(A, B, C, 64);
             },
             "Submatrices paralelo con bloques de 64x64"
+        },
+        {
+            [](const Matrix& A, const Matrix& B, Matrix& C) {
+                parallel_strassen_multiply(A, B, C, 32);
+            },
+            "Strassen paralelo"
+        },
+        {
+            [](const Matrix& A, const Matrix& B, Matrix& C) {
+                parallel_hybrid_multiply(A, B, C, 32, 32);
+            },
+            "Strassen híbrido con bloques de 32x32"
+        },
+        {
+            [](const Matrix& A, const Matrix& B, Matrix& C) {
+                parallel_hybrid_multiply(A, B, C, 64, 32);
+            },
+            "Strassen híbrido con bloques de 64x64"
         }
     };
     

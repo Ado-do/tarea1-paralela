@@ -98,8 +98,6 @@ void sequential_strassen_multiply(const MatA& A, const MatB &B, MatC &C, size_t 
     sequential_add_matrices(C22, M6, C22);
 }
 
-// TODO para matías: Esto probablemente sea lo que tenías que hacer tú.
-// YO, matías: Le agregue el template
 template <typename MatA, typename MatB, typename MatC>
 void multiply_block_gemm(size_t I, size_t J, size_t b, const MatA& A, const MatB& B, MatC& C) {
     size_t n = A.size();
