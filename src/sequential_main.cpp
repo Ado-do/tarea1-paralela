@@ -85,11 +85,11 @@ int main(int argc, char* argv[]) {
         }
         
         if (algo == "classic") {
-            for(int i=0; i < REPETITIONS; ++i) sequential_classic_multiply(A, B, C);
+            sequential_classic_multiply(A, B, C);
         } else if (algo == "cache") {
-            for(int i=0; i < REPETITIONS; ++i) sequential_cachefriendly_multiply(A, B, C, BLOCK_SIZE);
+            sequential_cachefriendly_multiply(A, B, C, BLOCK_SIZE);
         } else if (algo == "strassen") {
-            for(int i=0; i < REPETITIONS; ++i) sequential_strassen_multiply(A, B, C, N0);
+            sequential_strassen_multiply(A, B, C, N0);
         }
 
         // Detenemos counters de perf
