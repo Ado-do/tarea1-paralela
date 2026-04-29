@@ -2,6 +2,7 @@
 #include <random>
 #include <fstream>
 #include <omp.h>
+#include <sys/prctl.h>
 
 #include "parallel_algorithms.hpp"
 
@@ -68,7 +69,45 @@ void run_parallel_experiment(size_t n, int p, ofstream &csv) {
     cout << "  Hybrid:\t\t" << hybrid_time << "s" << endl;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    // Modo de ejecución único (./sequential_main [n] [classic | cache | strassen])
+    if (argc == 3) {
+        size_t n = stoul(argv[1]);
+        string algo = argv[2];
+
+        Matrix A(n), B(n), C(n);
+        random_device rd;
+        mt19937_64 gen(rd());
+        uniform_real_distribution<double> dis(0.0, 1.0);
+        for (size_t i = 0; i < n; i++) {
+            for (size_t j = 0; j < n; j++) {
+                A(i, j) = dis(gen); B(i, j) = dis(gen);
+            }
+        }
+
+        cout << "** Experimento targetado: n=" << n << " algo=" << algo << endl;
+        
+        // Permitimos counters de perf
+        if (prctl(PR_TASK_PERF_EVENTS_ENABLE) == -1) {
+            perror("prctl enable fallado");
+        }
+        
+        if (algo == "tiled") {
+            parallel_tiled_multiply(A, B, C, BLOCK_SIZE);
+        } else if (algo == "strassen") {
+            parallel_strassen_multiply(A, B, C, N0);
+        } else if (algo == "hybrid") {
+            parallel_hybrid_multiply(A, B, C, BLOCK_SIZE, N0);
+        }
+
+        // Detenemos counters de perf
+        if (prctl(PR_TASK_PERF_EVENTS_DISABLE) == -1) {
+            perror("prctl disable fallado");
+        }
+                
+        return 0;
+    }
+
     vector<size_t> sizes = {256, 512, 1024, 2048, 4096};
     vector<int> threads = {1, 2, 4, 8};
 
