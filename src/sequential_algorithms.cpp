@@ -21,9 +21,9 @@ void sequential_classic_multiply(const MatA& A, const MatB& B, MatC& C) {
 
 
 template <typename MatA, typename MatB, typename MatC>
-void sequential_strassen_multiply(const MatA& A, const MatB &B, MatC &C) {
+void sequential_strassen_multiply(const MatA& A, const MatB &B, MatC &C, size_t n0) {
     size_t n = A.size();
-    if (n <= 32) { // n_0 distinto probablemente sea mejor.
+    if (n <= n0) { // n_0 distinto probablemente sea mejor.
         sequential_classic_multiply(A, B, C);
         return;
     }
@@ -47,33 +47,33 @@ void sequential_strassen_multiply(const MatA& A, const MatB &B, MatC &C) {
     // M1 = (A11 + A22)(B11 + B22)
     sequential_add_matrices(A11, A22, T1);
     sequential_add_matrices(B11, B22, T2);
-    Matrix M1(m); sequential_strassen_multiply(T1, T2, M1);
+    Matrix M1(m); sequential_strassen_multiply(T1, T2, M1, n0);
 
     // M2 = (A21 + A22)B11
     sequential_add_matrices(A21, A22, T1);
-    Matrix M2(m); sequential_strassen_multiply(T1, B11, M2);
+    Matrix M2(m); sequential_strassen_multiply(T1, B11, M2, n0);
 
     // M3 = A11(B12 - B22)
     sequential_sub_matrices(B12, B22, T2);
-    Matrix M3(m); sequential_strassen_multiply(A11, T2, M3);
+    Matrix M3(m); sequential_strassen_multiply(A11, T2, M3, n0);
 
     // M4 = A22(B21 - B11)
     sequential_sub_matrices(B21, B11, T2);
-    Matrix M4(m); sequential_strassen_multiply(A22, T2, M4);
+    Matrix M4(m); sequential_strassen_multiply(A22, T2, M4, n0);
 
     // M5 = (A11 + A12)B22
     sequential_add_matrices(A11, A12, T1);
-    Matrix M5(m); sequential_strassen_multiply(T1, B22, M5);
+    Matrix M5(m); sequential_strassen_multiply(T1, B22, M5, n0);
 
     // M6 = (A21 - A11)(B11 + B12)
     sequential_sub_matrices(A21, A11, T1);
     sequential_add_matrices(B11, B12, T2);
-    Matrix M6(m); sequential_strassen_multiply(T1, T2, M6);
+    Matrix M6(m); sequential_strassen_multiply(T1, T2, M6, n0);
 
     // M7 = (A12 - A22)(B21 + B22)
     sequential_sub_matrices(A12, A22, T1);
     sequential_add_matrices(B21, B22, T2);
-    Matrix M7(m); sequential_strassen_multiply(T1, T2, M7);
+    Matrix M7(m); sequential_strassen_multiply(T1, T2, M7, n0);
 
     // Combinamos los resultados en los cuadrantes de C
     MatrixView C11 = C.get_quadrant(0);
@@ -98,8 +98,6 @@ void sequential_strassen_multiply(const MatA& A, const MatB &B, MatC &C) {
     sequential_add_matrices(C22, M6, C22);
 }
 
-// TODO para matías: Esto probablemente sea lo que tenías que hacer tú.
-// YO, matías: Le agregue el template
 template <typename MatA, typename MatB, typename MatC>
 void multiply_block_gemm(size_t I, size_t J, size_t b, const MatA& A, const MatB& B, MatC& C) {
     size_t n = A.size();
@@ -155,14 +153,14 @@ void sequential_cachefriendly_multiply(const MatA& A, const MatB& B, MatC& C, si
 
 // instanciaciones explícitas de los template
 // Strassen (8 combinaciones)
-template void sequential_strassen_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&);
-template void sequential_strassen_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&);
-template void sequential_strassen_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&);
-template void sequential_strassen_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&);
-template void sequential_strassen_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&);
-template void sequential_strassen_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&);
-template void sequential_strassen_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&);
-template void sequential_strassen_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&);
+template void sequential_strassen_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&, size_t);
+template void sequential_strassen_multiply<MatrixView, Matrix, Matrix>(const MatrixView&, const Matrix&, Matrix&, size_t);
+template void sequential_strassen_multiply<Matrix, MatrixView, Matrix>(const Matrix&, const MatrixView&, Matrix&, size_t);
+template void sequential_strassen_multiply<MatrixView, MatrixView, Matrix>(const MatrixView&, const MatrixView&, Matrix&, size_t);
+template void sequential_strassen_multiply<Matrix, Matrix, MatrixView>(const Matrix&, const Matrix&, MatrixView&, size_t);
+template void sequential_strassen_multiply<MatrixView, Matrix, MatrixView>(const MatrixView&, const Matrix&, MatrixView&, size_t);
+template void sequential_strassen_multiply<Matrix, MatrixView, MatrixView>(const Matrix&, const MatrixView&, MatrixView&, size_t);
+template void sequential_strassen_multiply<MatrixView, MatrixView, MatrixView>(const MatrixView&, const MatrixView&, MatrixView&, size_t);
 
 // Clásica (8 combinaciones)
 template void sequential_classic_multiply<Matrix, Matrix, Matrix>(const Matrix&, const Matrix&, Matrix&);

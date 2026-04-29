@@ -39,4 +39,4 @@ template <typename MatA, typename MatB, typename MatC>
 void sequential_cachefriendly_multiply(const MatA& A, const MatB& B, MatC& C, size_t b);
 
 template <typename MatA, typename MatB, typename MatC>
-void sequential_strassen_multiply(const MatA& A, const MatB &B, MatC &C);
+void sequential_strassen_multiply(const MatA& A, const MatB &B, MatC &C, size_t n0);
