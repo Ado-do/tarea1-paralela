@@ -44,8 +44,8 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C, size_t n
     #pragma omp task shared(M1)
     {
         Matrix T1_1(m), T1_2(m);
-        sequential_add_matrices(A11, A22, T1_1);
-        sequential_add_matrices(B11, B22, T1_2);
+        parallel_add_matrices(A11, A22, T1_1);
+        parallel_add_matrices(B11, B22, T1_2);
         _parallel_strassen_multiply(T1_1, T1_2, M1, n0);
     }
 
@@ -53,7 +53,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C, size_t n
     #pragma omp task shared(M2)
     {
         Matrix T2(m);
-        sequential_add_matrices(A21, A22, T2);
+        parallel_add_matrices(A21, A22, T2);
         _parallel_strassen_multiply(T2, B11, M2, n0);
     }
 
@@ -61,7 +61,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C, size_t n
     #pragma omp task shared(M3)
     {
         Matrix T3(m);
-        sequential_sub_matrices(B12, B22, T3);
+        parallel_sub_matrices(B12, B22, T3);
         _parallel_strassen_multiply(A11, T3, M3, n0);
     }
 
@@ -69,7 +69,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C, size_t n
     #pragma omp task shared(M4)
     {
         Matrix T4(m);
-        sequential_sub_matrices(B21, B11, T4);
+        parallel_sub_matrices(B21, B11, T4);
         _parallel_strassen_multiply(A22, T4, M4, n0);
     }
 
@@ -77,7 +77,7 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C, size_t n
     #pragma omp task shared(M5)
     {
         Matrix T5(m);
-        sequential_add_matrices(A11, A12, T5);
+        parallel_add_matrices(A11, A12, T5);
         _parallel_strassen_multiply(T5, B22, M5, n0);
     }
 
@@ -85,8 +85,8 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C, size_t n
     #pragma omp task shared(M6)
     {
         Matrix T6_1(m), T6_2(m);
-        sequential_sub_matrices(A21, A11, T6_1);
-        sequential_add_matrices(B11, B12, T6_2);
+        parallel_sub_matrices(A21, A11, T6_1);
+        parallel_add_matrices(B11, B12, T6_2);
         _parallel_strassen_multiply(T6_1, T6_2, M6, n0);
     }
 
@@ -94,8 +94,8 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C, size_t n
     #pragma omp task shared(M7)
     {
         Matrix T7_1(m), T7_2(m);
-        sequential_sub_matrices(A12, A22, T7_1);
-        sequential_add_matrices(B21, B22, T7_2);
+        parallel_sub_matrices(A12, A22, T7_1);
+        parallel_add_matrices(B21, B22, T7_2);
         _parallel_strassen_multiply(T7_1, T7_2, M7, n0);
     }
 
@@ -109,20 +109,20 @@ void _parallel_strassen_multiply(const MatA& A, const MatB& B, MatC& C, size_t n
     MatrixView C22 = C.get_quadrant(3);
 
     // C11 = M1 + M4 - M5 + M7
-    sequential_add_matrices(M1, M4, C11);
-    sequential_sub_matrices(C11, M5, C11);
-    sequential_add_matrices(C11, M7, C11);
+    parallel_add_matrices(M1, M4, C11);
+    parallel_sub_matrices(C11, M5, C11);
+    parallel_add_matrices(C11, M7, C11);
 
     // C12 = M3 + M5
-    sequential_add_matrices(M3, M5, C12);
+    parallel_add_matrices(M3, M5, C12);
 
     // C21 = M2 + M4
-    sequential_add_matrices(M2, M4, C21);
+    parallel_add_matrices(M2, M4, C21);
 
     // C22 = M1 - M2 + M3 + M6
-    sequential_sub_matrices(M1, M2, C22);
-    sequential_add_matrices(C22, M3, C22);
-    sequential_add_matrices(C22, M6, C22);
+    parallel_sub_matrices(M1, M2, C22);
+    parallel_add_matrices(C22, M3, C22);
+    parallel_add_matrices(C22, M6, C22);
 }
 
 template <typename MatA, typename MatB, typename MatC>
@@ -165,59 +165,59 @@ void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b, 
     #pragma omp task shared(M1)
     {
         Matrix T1_1(m), T1_2(m);
-        sequential_add_matrices(A11, A22, T1_1);
-        sequential_add_matrices(B11, B22, T1_2);
-        _parallel_strassen_multiply(T1_1, T1_2, M1, n0);
+        parallel_add_matrices(A11, A22, T1_1);
+        parallel_add_matrices(B11, B22, T1_2);
+        _parallel_hybrid_multiply(T1_1, T1_2, M1, b, n0);
     }
 
     // M2 = (A21 + A22)B11
     #pragma omp task shared(M2)
     {
         Matrix T2(m);
-        sequential_add_matrices(A21, A22, T2);
-        _parallel_strassen_multiply(T2, B11, M2, n0);
+        parallel_add_matrices(A21, A22, T2);
+        _parallel_hybrid_multiply(T2, B11, M2, b, n0);
     }
 
     // M3 = A11(B12 - B22)
     #pragma omp task shared(M3)
     {
         Matrix T3(m);
-        sequential_sub_matrices(B12, B22, T3);
-        _parallel_strassen_multiply(A11, T3, M3, n0);
+        parallel_sub_matrices(B12, B22, T3);
+        _parallel_hybrid_multiply(A11, T3, M3, b, n0);
     }
 
     // M4 = A22(B21 - B11)
     #pragma omp task shared(M4)
     {
         Matrix T4(m);
-        sequential_sub_matrices(B21, B11, T4);
-        _parallel_strassen_multiply(A22, T4, M4, n0);
+        parallel_sub_matrices(B21, B11, T4);
+        _parallel_hybrid_multiply(A22, T4, M4, b, n0);
     }
 
     // M5 = (A11 + A12)B22
     #pragma omp task shared(M5)
     {
         Matrix T5(m);
-        sequential_add_matrices(A11, A12, T5);
-        _parallel_strassen_multiply(T5, B22, M5, n0);
+        parallel_add_matrices(A11, A12, T5);
+        _parallel_hybrid_multiply(T5, B22, M5, b, n0);
     }
 
     // M6 = (A21 - A11)(B11 + B12)
     #pragma omp task shared(M6)
     {
         Matrix T6_1(m), T6_2(m);
-        sequential_sub_matrices(A21, A11, T6_1);
-        sequential_add_matrices(B11, B12, T6_2);
-        _parallel_strassen_multiply(T6_1, T6_2, M6, n0);
+        parallel_sub_matrices(A21, A11, T6_1);
+        parallel_add_matrices(B11, B12, T6_2);
+        _parallel_hybrid_multiply(T6_1, T6_2, M6, b, n0);
     }
 
     // M7 = (A12 - A22)(B21 + B22)
     #pragma omp task shared(M7)
     {
         Matrix T7_1(m), T7_2(m);
-        sequential_sub_matrices(A12, A22, T7_1);
-        sequential_add_matrices(B21, B22, T7_2);
-        _parallel_strassen_multiply(T7_1, T7_2, M7, n0);
+        parallel_sub_matrices(A12, A22, T7_1);
+        parallel_add_matrices(B21, B22, T7_2);
+        _parallel_hybrid_multiply(T7_1, T7_2, M7, b, n0);
     }
 
     // Sincronización
@@ -230,20 +230,20 @@ void _parallel_hybrid_multiply(const MatA& A, const MatB& B, MatC& C, size_t b, 
     MatrixView C22 = C.get_quadrant(3);
 
     // C11 = M1 + M4 - M5 + M7
-    sequential_add_matrices(M1, M4, C11);
-    sequential_sub_matrices(C11, M5, C11);
-    sequential_add_matrices(C11, M7, C11);
+    parallel_add_matrices(M1, M4, C11);
+    parallel_sub_matrices(C11, M5, C11);
+    parallel_add_matrices(C11, M7, C11);
 
     // C12 = M3 + M5
-    sequential_add_matrices(M3, M5, C12);
+    parallel_add_matrices(M3, M5, C12);
 
     // C21 = M2 + M4
-    sequential_add_matrices(M2, M4, C21);
+    parallel_add_matrices(M2, M4, C21);
 
     // C22 = M1 - M2 + M3 + M6
-    sequential_sub_matrices(M1, M2, C22);
-    sequential_add_matrices(C22, M3, C22);
-    sequential_add_matrices(C22, M6, C22);
+    parallel_sub_matrices(M1, M2, C22);
+    parallel_add_matrices(C22, M3, C22);
+    parallel_add_matrices(C22, M6, C22);
 }
 
 template <typename MatA, typename MatB, typename MatC>
